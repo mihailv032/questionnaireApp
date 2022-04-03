@@ -4,8 +4,7 @@ import { StyleSheet, ScrollView,Text, View,Button } from 'react-native';
 
 import * as data from '../assets/details.json' 
 
-import * as FileSystem from 'expo-file-system';
-const { StorageAccessFramework } = FileSystem;
+//import {writeAsStringAsync,documentDirectory,readAsStringAsync} from  'expo-file-system';
 
 
 const levels = data.levels
@@ -20,40 +19,36 @@ class LvlContainer extends React.Component{
   constructor(props){
     super(props)
     this.state = {
-      q:0,
-      correctAns:null,
-    },
-
+      q:0, //start from question 0 
+      timer:+levels[this.props.route.params.level]["timer"],
+      correctAnswered:0
+    };
     this.handlOnTap = this.handlOnTap.bind(this)
   }
-
   
-  componentDidMount(){
-    this.setState({correctAns:levels[this.props.route.params.level]['questions'][this.state.q].ans})
-  }
+  //  componentDidMount(){
+  //    this.setState({correctAns:levels[this.props.route.params.level]['questions'][this.state.q].ans})
+  //  }
+  
   handlOnTap(res) {
-//
-// the state is not updated ??
-//    
-    if(res == this.state.currentAns){
+    if(res == +levels[this.props.route.params.level]["questions"][this.state.q]["ans"]){
       this.setState( (prevState) => ({
-	correctAns:prevState.correctAns+1,
+        q:prevState.q+1,
+	correctAnswered:prevState.correctAnswered+1
+      }))
+    }else
+      this.setState( prevState => ({
 	q:prevState.q+1
       }))
-    }else{this.setState( prevState => { {q:prevState.q+1} }) }
-    console.log(this.state.correctAns)
-//    console.log(levels[route.params.level].length,q ) // printing 0 for some reason ??????
-
-  }
+    }
+  //}
   render(){
-    console.log(this.state.q)
     let finish = false;
     let arr=[];
-    let ans;
-    console.log(levels[this.props.route.params.level]['questions'].length)
     //if the question exists generating the options for it otherwise set finish to true and render the finish screen
-    if (this.state.q<=levels[this.props.route.params.level]['questions'].length){
-      ans=+levels[this.props.route.params.level]['questions'][this.state.q].ans
+    if (this.state.q<=levels[this.props.route.params.level]['questions'].length-1){
+
+      let ans = +levels[this.props.route.params.level]["questions"][this.state.q]["ans"]
       let min = Math.ceil(ans-(ans-2))
       let max=ans+(ans*2)
       while (arr.length != 4){
@@ -64,25 +59,34 @@ class LvlContainer extends React.Component{
       }
       arr.splice(Math.floor(Math.random()*4),0,ans)
 
-    }else { finish = true}
-      //inserting the correct answer into the array of different options
+    }else {
+      finish = true
+     // const details = readAsStringAsync(documentDirectory+"details.json")
+      //console.log(details)
+//      if (details) {
+//	writeAsStringAsync(documentDirectory+"details.json",)
+//      }
+    }
+    //inserting the correct answer into the array of different options
+    console.log('rendering')
     return (
-    <>
-    {
-      //setting the timer if the level requires one
-      finish ?
-      <FinishContainer correctAns={correctAns}></FinishContainer> :
-      <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q} onTap={this.handlOnTap} />
-      }
-    </>
+      <>
+	{
+	  //setting the timer if the level requires one
+	  finish ?
+	  <FinishContainer correctAns={this.state.correctAnswered}></FinishContainer> :
+	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q} onTap={this.handlOnTap} timer={this.state.timer}/>
+	}
+      </>
     )
   };
 }
 
 // presentational component for the level screens geenerated by the lvlsContainere
-function Lvls({choices,q,onTap}){
+function Lvls({choices,q,onTap,timer}){
   return (
     <>
+      <Timer time={timer} />
       <View><Text>What is {q}</Text></View>
       {
 	choices.map( item => {
@@ -97,7 +101,40 @@ function Lvls({choices,q,onTap}){
   )
 }
 
+class Timer extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      timer:this.props.time
+    }
+    this.tick = this.tick.bind(this)
+  }
 
+  componentDidMount(){
+    if (this.state.timer){
+      this.timerID = setInterval(this.tick(),1000);
+    }else {
+      this.state.time = "time no problem"
+    }
+  }
+  componentWillUnmount(){
+    if (this.time){
+      clearInterval(this.timerID);
+    }
+  }
+  tick(){
+    this.setState( prevState => ({
+      timer: prevState.timer-1
+    }));
+  }
+
+  render(){
+    console.log(this.props.time)
+    return (
+      <View><Text>Time Left: {this.state.timer}</Text></View>
+    )
+  }
+}
 
 function FinishContainer(props){
 
@@ -133,6 +170,11 @@ class LvlButtonsContainer extends React.Component{
     this.props.navigation.navigate('lvl', {level:e})
 
   }
+
+  componentDidMount(){
+    
+  }
+
   render(){
     return(
       <>
