@@ -109,9 +109,11 @@ class Timer extends React.Component{
     super(props)
     this.state = {
       title:"Time Left: ",
-      timer:this.props.time
+      timer:this.props.time,
+      pause: false
     }
     this.tick = this.tick.bind(this)
+    this.handlPause = this.handlPause.bind(this)
   }
 
   componentDidMount(){
@@ -136,11 +138,23 @@ class Timer extends React.Component{
       this.setState({ timer: this.props.time })
     }
   }
-
+  handlPause(){
+    if (!this.state.pause){
+      clearInterval(this.timerID);
+      this.setState({pause:true})
+    }else {
+      clearInterval(this.timerID);
+      this.setState({pause:false})
+      this.timerID = setInterval( () => this.tick(),1000);
+    }
+  }
   render(){
     console.log(this.props.time)
     return (
-      <View><Text>{ this.state.title+ this.state.timer}</Text></View>
+      <View>
+	<Text onPress={this.handlPause}>Pause</Text>
+	<Text>{ this.state.title+ this.state.timer}</Text>
+      </View>
     )
   }
 }
