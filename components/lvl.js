@@ -24,11 +24,16 @@ class LvlContainer extends React.Component{
       correctAnswered:0
     };
     this.handlOnTap = this.handlOnTap.bind(this)
+    this.handlOnTimeOut = this.handlOnTimeOut.bind(this)
   }
   
   //  componentDidMount(){
   //    this.setState({correctAns:levels[this.props.route.params.level]['questions'][this.state.q].ans})
   //  }
+
+  handlOnTimeOut() {
+      this.setState( prevState => ({q:prevState.q+1}))
+  }
   
   handlOnTap(res) {
     if(res == +levels[this.props.route.params.level]["questions"][this.state.q]["ans"]){
@@ -37,9 +42,7 @@ class LvlContainer extends React.Component{
 	correctAnswered:prevState.correctAnswered+1
       }))
     }else
-      this.setState( prevState => ({
-	q:prevState.q+1
-      }))
+      this.setState( prevState => ({q:prevState.q+1}))
     }
   //}
   render(){
@@ -50,7 +53,7 @@ class LvlContainer extends React.Component{
 
       let ans = +levels[this.props.route.params.level]["questions"][this.state.q]["ans"]
       let min = Math.ceil(ans-(ans-2))
-      let max=ans+(ans*2)
+      let max= 20//ans+(ans*2)
       while (arr.length != 4){
 	let a=Math.floor(Math.random()*(max-min+1)+min)
 	if  (!arr.includes(a) && +a !== +ans){
@@ -74,8 +77,8 @@ class LvlContainer extends React.Component{
 	{
 	  //setting the timer if the level requires one
 	  finish ?
-	  <FinishContainer correctAns={this.state.correctAnswered}></FinishContainer> :
-	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q} onTap={this.handlOnTap} timer={this.state.timer}/>
+	  <FinishContainer correctAns={this.state.correctAnswered} ></FinishContainer> :
+	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q} onTap={this.handlOnTap} timer={ 5 } onTimeOut={this.handlOnTimeOut} /> 
 	}
       </>
     )
@@ -83,16 +86,16 @@ class LvlContainer extends React.Component{
 }
 
 // presentational component for the level screens geenerated by the lvlsContainere
-function Lvls({choices,q,onTap,timer}){
+function Lvls({choices,q,onTap,timer,onTimeOut}){
   return (
     <>
-      <Timer time={timer} />
+      <Timer time={timer} onTimeOut={onTimeOut} />
       <View><Text>What is {q}</Text></View>
       {
 	choices.map( item => {
 	  return (
 	    <>
-	      <Button key={item} title={String(item)} onPress={ () => onTap(item)} />
+	      <Button key={item} title={String(item)} onPress={ () => onTap(item) } />
 	    </>
 	  )
 	})
@@ -105,6 +108,7 @@ class Timer extends React.Component{
   constructor(props){
     super(props)
     this.state = {
+      title:"Time Left: ",
       timer:this.props.time
     }
     this.tick = this.tick.bind(this)
@@ -112,26 +116,31 @@ class Timer extends React.Component{
 
   componentDidMount(){
     if (this.state.timer){
-      this.timerID = setInterval(this.tick(),1000);
+      this.timerID = setInterval( () => this.tick(),1000);
     }else {
       this.state.time = "time no problem"
     }
   }
   componentWillUnmount(){
-    if (this.time){
+    if (this.props.time){
       clearInterval(this.timerID);
     }
   }
   tick(){
-    this.setState( prevState => ({
-      timer: prevState.timer-1
-    }));
+    if (this.state.timer !=0){
+      this.setState( prevState => ({
+	timer: prevState.timer-1
+      }));
+    }else {
+      this.props.onTimeOut()
+      this.setState({ timer: this.props.time })
+    }
   }
 
   render(){
     console.log(this.props.time)
     return (
-      <View><Text>Time Left: {this.state.timer}</Text></View>
+      <View><Text>{ this.state.title+ this.state.timer}</Text></View>
     )
   }
 }

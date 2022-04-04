@@ -20,8 +20,12 @@ class Home extends React.Component {
 
 function Header({navigation}){
   //will render the header for home
-  return <View></View>
+  return (
+    <View>
+  </View>
+  )
 }
+
 
 
 export default Home;
