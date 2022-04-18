@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {  SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -20,16 +20,19 @@ export default function App() {
   details()
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-	<Stack.Screen name="home" component={Home}/>
-	<Stack.Screen name="lvl" component={LvlContainer}/>
+      <Stack.Navigator  >
+	<Stack.Screen name="home" component={Home} options={{
+	  headerStyle: {
+	    height:0,
+            backgroundColor: '#f4511e'
+	  }
+	}}/>
+	<Stack.Screen name="lvl" component={LvlContainer}  screenOptions={{ headerShown: false }}/>
       </Stack.Navigator>
-    </NavigationContainer>
 
+    </NavigationContainer>
   );
 }
 
-async function details(){
-  
-}
+
 
