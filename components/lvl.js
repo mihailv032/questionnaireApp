@@ -1,6 +1,6 @@
 
 import React, {useState} from 'react';
-import { StyleSheet, ScrollView,Text, View,TouchableOpacity,Image } from 'react-native';
+import { StyleSheet, ScrollView,Text, View,TouchableOpacity,Image,ImageBackground, Button } from 'react-native';
 
 import * as data from '../assets/details.json' 
 
@@ -14,21 +14,23 @@ let progress = data.progress
 function Lvls({choices,q,onTap,timer,onTimeOut}){
   return (
     <View style={styledLevel.container}>
-      <Timer time={timer} onTimeOut={onTimeOut} style={styledLevel.timer} />
-      <View><Text style={styledLevel.question}>What is {q} ?</Text></View>
-      <View style={styledLevel.buttonContainer}>
-	{
-	  choices.map( item => {
-	    return (
-	      <>
-		<TouchableOpacity style={styledLevel.buttons} key={item} onPress={ () => onTap(item) }>
-		  <Text style={styledLevel.buttonText}>{item}</Text>
-		</TouchableOpacity>
-	      </>
-	    )
-	  })
-	}
-      </View>
+      <ImageBackground source={require("../assets/levelbg.jpg")} style={styledLevel.img}>
+	{ timer ? <Timer key={q} time={timer} onTimeOut={onTimeOut} style={styledLevel.timer} /> : null }
+	<View style={styledLevel.header}><Text style={styledLevel.question}>{q} ?</Text></View>
+	<View style={styledLevel.buttonContainer}>
+	  {
+	    choices.map( item => {
+	      return (
+		<>
+		  <TouchableOpacity style={styledLevel.buttons} key={item} onPress={ () => onTap(item) }>
+		    <Text style={styledLevel.buttonText}>{item}</Text>
+		  </TouchableOpacity>
+		</>
+	      )
+	    })
+	  }
+	</View>
+      </ImageBackground>
     </View>
   )
 }
@@ -41,41 +43,53 @@ const styledLevel = StyleSheet.create({
     //make a gradient bg
 
   },
+  header: {
+    width: "100%",
+    alignItems: "center",
+    backgroundColor: "white",
+    padding: 10,
+    marginTop: 20,
+
+  },
   question: {
-    fontSize: 30
+    fontSize: 37,
+    color: "#112A46",
+    fontWeight: "bold"
   },
   buttons: {
    // background-image: linear-gradient(92.88deg, #455EB5 9.16%, #5643CC 43.89%, #673FD7 64.72%);
-    backgroundColor: "#000",
+    backgroundColor: "#581845",
     borderRadius: 8,
 //  font-family: "Inter UI","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;
+
     fontSize: 16,
     fontWeight: "500",
-    width: "40%",
-    height: 30,
-    paddingBottom: 5,
+
+    width: "50%",
+
+    padding: 5,
+
     alignItems: "center",
     marginBottom: 10,
-
-//    width: "40%",
-//    alignItems: "center",
-//    marginBottom: 20,
-//    padding: 10,
-//    backgroundColor: "#FF9700",
-//    borderRadius: 20,
 
   },
   buttonText: {
     fontSize: 20,
+    fontWeight: "bold",
     textTransform: "capitalize",
-    color: "#FFFFFF",
+    color: "#FF5733",
   },
   buttonContainer : {
     flex: 1,
     width: "100%",
     alignItems: "center",
     justifyContent: "center"
+  },
+  img : {
+    width: "100%",
+    height: "100%",
   }
+
 })
 
 
@@ -145,7 +159,10 @@ class LvlContainer extends React.Component{
 	  //setting the timer if the level requires one
 	  finish ?
 	  <FinishContainer correctAns={this.state.correctAnswered} ></FinishContainer> :
-	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q} onTap={this.handlOnTap} timer={ 99999999 } onTimeOut={this.handlOnTimeOut} /> 
+	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q}
+		onTap={this.handlOnTap}
+		timer={ levels[this.props.route.params.level].timer}
+		onTimeOut={this.handlOnTimeOut} /> 
 	}
       </>
     )
@@ -156,7 +173,6 @@ class Timer extends React.Component{
   constructor(props){
     super(props)
     this.state = {
-      title:"Time Left: ",
       timer:this.props.time,
       pause: false 
       
@@ -166,16 +182,10 @@ class Timer extends React.Component{
   }
 
   componentDidMount(){
-    if (this.state.timer){
-      this.timerID = setInterval( () => this.tick(),1000);
-    }else {
-      this.state.time = "time no problem"
-    }
+    this.timerID = setInterval( () => this.tick(),1000);
   }
   componentWillUnmount(){
-    if (this.props.time){
-      clearInterval(this.timerID);
-    }
+    clearInterval(this.timerID);
   }
   tick(){
     if (this.state.timer !=0){
@@ -200,8 +210,17 @@ class Timer extends React.Component{
   render(){
     return (
       <View style={styledTimer.container}>
-	<Text onPress={this.handlPause}>Pause</Text>
-	<Text>{ this.state.title+ this.state.timer}</Text>
+	<TouchableOpacity style={styledTimer.button}>
+	  <Text onPress={this.handlPause}style={styledTimer.button}>
+	    {
+	      this.state.pause ?
+	      <Image onPress={this.handlPause} source={ require("../assets/pause.png") } style={styledTimer.pause} /> :
+	      <Image onPress={this.handlPause} source={ require("../assets/Pause-Button-Transparent.png") } style={styledTimer.pause} /> 
+	      
+	    }
+	  </Text>
+	</TouchableOpacity>
+	<Text style={styledTimer.timeLeft}>Time Left: {this.state.timer}</Text>
       </View>
     )
   }
@@ -211,10 +230,23 @@ const styledTimer = StyleSheet.create({
   container: {
     width: "100%",
     alignItems: "flex-end",
-    marginRight: 26
+    marginRight: 26,
+    paddingRight: 30
   },
   timeLeft: {
-    
+    color: "black",
+    fontWeight: "bold",
+    fontSize: 15
+  },
+  pause: {
+    width: 50,
+    height: 60,
+
+  },
+  button: {
+    width: 50,
+    height: 90,
+//    backgroundColor: 
   }
 })
 function FinishContainer(props){

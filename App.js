@@ -13,7 +13,7 @@ const Stack= createStackNavigator()
 
 export default function App() {
   details = async () => {
-    let files = await readDirectoryAsync(documentDirectory)
+   let files = await readDirectoryAsync(documentDirectory)
     files.includes('details.json') ? null : StorageAccessFramework.createFileAsync(documentDirectory,'details.json')
 
   }
