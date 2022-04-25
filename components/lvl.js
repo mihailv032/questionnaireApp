@@ -9,7 +9,6 @@ import * as data from '../assets/details.json'
 
 const levels = data.levels
 let progress = data.progress
-
 // presentational component for the level screens geenerated by the lvlsContainere
 function Lvls({choices,q,onTap,timer,onTimeOut}){
   return (
