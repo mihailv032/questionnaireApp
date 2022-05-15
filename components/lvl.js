@@ -158,12 +158,13 @@ class LvlContainer extends React.Component{
 //      }
     }
     //inserting the correct answer into the array of different options
+    console.log(this.state.correctAnswered)
     return (
       <>
 	{
 	  //setting the timer if the level requires one
 	  finish ?
-	  <FinishContainer correctAns={this.state.correctAnswered} ></FinishContainer> :
+	  this.props.navigation.navigate('finish', {correctAns:this.state.correctAnswered,lvl:this.props.route.params.level}) : 
 	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q}
 		onTap={this.handlOnTap}
 		timer={ levels[this.props.route.params.level].timer}
@@ -254,22 +255,47 @@ const styledTimer = StyleSheet.create({
 //    backgroundColor: 
   }
 })
-function FinishContainer(props){
-
-  return(
-    <Finish ans={props.correctAns} />
-  )
-}
 
 function Finish(props) {
+  const correctans = props.route.params.correctAns
+  function goHome(){
+    props.navigation.navigate("home")
+  }
+  function retry() {
+//    props.navigation.navigate('lvl', {level:e})
+    props.navigation.navigate("lvl", {level: 1})
+//    console.log(props.route.params.lvl)
+  }
   return(
-    <View style={styledFinish.container}>
-      <View style={styledFinish.header}>
-	<Text style={styledFinish.title}>Finish</Text>
-	<Image source={require("../assets/fireworks.gif")} ></Image>
+    <ImageBackground source={require("../assets/finish.jpg")} style={styledLevel.img}>
+      <View style={styledFinish.container}>
+	<View style={styledFinish.header}>
+	  <Text style={styledFinish.title}>Finish</Text>
+	  <Image source={require("../assets/fireworks.gif")} ></Image>
+	</View>
+
+	<View style={styledFinish.main}>
+	  <Text style={styledFinish.info}>You have answered
+	    {correctans != 1 ? ` ${correctans} questions ` : ` ${correctans} question `} correctly
+	  </Text>
+
+	  <View>
+	    
+	    <TouchableOpacity onPress={ () => goHome()} style={styledFinish.buttonContainer}>
+	      <Image source={require("../assets/home.png")} style={styledFinish.btnImage}></Image>
+	      <Text style={styledFinish.buttonText}>Go Home</Text>
+	    </TouchableOpacity>
+{	    
+//	    <TouchableOpacity onPress={ () => retry() } style={styledFinish.buttonContainer}>
+//	      <Image source={require("../assets/retry.png")} style={styledFinish.btnImage}></Image>
+//	      <Text style={styledFinish.buttonText}>Retry</Text>
+//	    </TouchableOpacity>
+}	    
+	  </View>
+
+	</View>
       </View>
-      <Text>{props.ans}</Text>
-    </View>
+    </ImageBackground>
   )
 }
 
@@ -279,7 +305,7 @@ const styledFinish = StyleSheet.create({
     height: 100,
   },
   container: {
-    flex: 1
+    flex: 1,
   },
   header: {
     position: "relative",
@@ -289,8 +315,42 @@ const styledFinish = StyleSheet.create({
     fontSize: 45,
     position: "absolute",
     bottom: 0
-  }
-  
+  },
+  main: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  btnImage:{
+    width: 58,
+    height: 58,
+    marginRight: 5
+  },
+  buttonContainer: {
+    backgroundColor: "#ff5733",
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 5,
+    paddingBottom: 5,
+    marginBottom: 5,
+    borderRadius: 30,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 15,
+    fontWeight: "bold"
+  },
+  info: {
+    color: "black",
+    fontSize: 25,
+    textAlign: "center",
+    paddingLeft: 30,
+    paddingRight: 30,
+    fontWeight: "bold",
+    marginBottom: 50,
+  },
 })
 //handl the onClick of the buttons in the main menu
 //
@@ -381,5 +441,6 @@ export default LvlContainer
 
 export {
   LvlButtonsContainer,
-  FinishContainer
+  Finish,
+  LvlContainer
 }

@@ -33,7 +33,7 @@ const styledHome = StyleSheet.create({
   },
   container: {
     flex:1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 5 : 5
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 5
   }
 })
 

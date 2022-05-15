@@ -2,12 +2,14 @@ import { StatusBar } from 'expo-status-bar';
 import {  SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack'; //mb not needed ??
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import {readDirectoryAsync,deleteAsync,writeAsStringAsync,documentDirectory} from 'expo-file-system';
 
 import Home from './components/home'
-import LvlContainer from './components/lvl'
+import {LvlContainer,Finish}from './components/lvl'
 
 const Stack= createStackNavigator()
 
@@ -28,7 +30,20 @@ export default function App() {
             backgroundColor: '#f4511e'
 	  }
 	}}/>
-	<Stack.Screen name="lvl" component={LvlContainer}  screenOptions={{ headerShown: false }}/>
+	<Stack.Screen name="lvl" component={LvlContainer}  screenOptions={{unmountOnBlur:true }} options={{
+	  title:"Go Back",
+	  headerStyle: {
+	    height:0,
+            backgroundColor: '#f4511e'
+	  }
+	}} />
+	<Stack.Screen name="finish" component={Finish} screenOptions={{unmountOnBlur:true}} options={{
+	  
+	  headerStyle: {
+	    height:0,
+            backgroundColor: '#f4511e'
+	  }
+	  }}/>
       </Stack.Navigator>
 
     </NavigationContainer>
