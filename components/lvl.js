@@ -1,11 +1,16 @@
 
 import React, {useState} from 'react';
 import { StyleSheet, ScrollView,Text, View,TouchableOpacity,Image,ImageBackground, Button } from 'react-native';
-
+import { ProgressBar, Colors } from 'react-native-paper';
+import { Audio } from 'expo-av';
 import * as data from '../assets/details.json' 
 
 //import {writeAsStringAsync,documentDirectory,readAsStringAsync} from  'expo-file-system';
 
+//const { soundCorrect } = await Audio.Sound.createAsync( require('./assets/correct.mp3') )
+const MyComponent = () => (
+  <ProgressBar style={{marginTop: 15}}progress={0.5} color="#49B5F2" />
+);
 
 const levels = data.levels
 let progress = data.progress
@@ -13,6 +18,7 @@ let progress = data.progress
 function Lvls({choices,q,onTap,timer,onTimeOut}){
   return (
     <View style={styledLevel.container}>
+      <MyComponent/>
       <ImageBackground source={require("../assets/levelbg.jpg")} style={styledLevel.img}>
 	{ timer ? <Timer key={q} time={timer} onTimeOut={onTimeOut} style={styledLevel.timer} /> : null }
 	<View style={styledLevel.header}><Text style={styledLevel.question}>{q} ?</Text></View>

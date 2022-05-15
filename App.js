@@ -4,7 +4,7 @@ import {  SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import {readDirectoryAsync,documentDirectory,StorageAccessFramework} from 'expo-file-system';
+import {readDirectoryAsync,deleteAsync,writeAsStringAsync,documentDirectory} from 'expo-file-system';
 
 import Home from './components/home'
 import LvlContainer from './components/lvl'
@@ -14,8 +14,8 @@ const Stack= createStackNavigator()
 export default function App() {
   details = async () => {
     let files = await readDirectoryAsync(documentDirectory)
-    console.log(files.includes('details.json'))
-    files.includes('details.json') ? console.log('f') : StorageAccessFramework.createFileAsync(documentDirectory,'details.json')
+    files.includes('details.json') ? null : await writeAsStringAsync(documentDirectory+"/details.json","")
+    files = await readDirectoryAsync(documentDirectory)
 
   }
   details()
