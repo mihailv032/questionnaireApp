@@ -1,24 +1,24 @@
 
-import React, {useState} from 'react';
-import { StyleSheet, ScrollView,Text, View,TouchableOpacity,Image,ImageBackground, Button } from 'react-native';
+import React, {useState,useEffect} from 'react';
+import { Alert, StyleSheet, ScrollView,Text, View,TouchableOpacity,Image,ImageBackground, Button, Platform,StatusBar} from 'react-native';
 import { ProgressBar, Colors } from 'react-native-paper';
 import { Audio } from 'expo-av';
 import * as data from '../assets/details.json' 
 
 //import {writeAsStringAsync,documentDirectory,readAsStringAsync} from  'expo-file-system';
 
-//const { soundCorrect } = await Audio.Sound.createAsync( require('./assets/correct.mp3') )
 const MyComponent = () => (
   <ProgressBar style={{marginTop: 15}}progress={0.5} color="#49B5F2" />
 );
 
 const levels = data.levels
 let progress = data.progress
+
+let lvlSetTimeOut=[];
 // presentational component for the level screens geenerated by the lvlsContainere
 function Lvls({choices,q,onTap,timer,onTimeOut}){
   return (
     <View style={styledLevel.container}>
-      <MyComponent/>
       <ImageBackground source={require("../assets/levelbg.jpg")} style={styledLevel.img}>
 	{ timer ? <Timer key={q} time={timer} onTimeOut={onTimeOut} style={styledLevel.timer} /> : null }
 	<View style={styledLevel.header}><Text style={styledLevel.question}>{q} ?</Text></View>
@@ -46,6 +46,7 @@ const styledLevel = StyleSheet.create({
     alignItems:"center",
 //    backgroundColor: "#0DB9EB"
     //make a gradient bg
+
 
   },
   header: {
@@ -109,30 +110,82 @@ class LvlContainer extends React.Component{
       q:0, //start from question 0 
       timer:+levels[this.props.route.params.level]["timer"],
       correctAnswered:0
+//      sound:false//used to check if a sound is loaded; if !false will unload the saound else do nothing
     };
     this.handlOnTap = this.handlOnTap.bind(this)
     this.handlOnTimeOut = this.handlOnTimeOut.bind(this)
   }
   
-  //  componentDidMount(){
-  //    this.setState({correctAns:levels[this.props.route.params.level]['questions'][this.state.q].ans})
-  //  }
+  componentDidMount(){
+ 
+    this.props.navigation.addListener('beforeRemove', (e) => {
+      if (this.state.q>levels[this.props.route.params.level]['questions'].length-1){ //fix rec for test table
+	return;
+      }
+      e.preventDefault();
+
+      Alert.alert(
+      'If you leave the screen now all your progress will be lost',
+      'Go back ?',
+      [
+        { text: "Don't leave", style: 'cancel', onPress: () => {} },
+        {
+          text: 'Leave',
+          style: 'destructive',
+          // If the user confirmed, then we dispatch the action we blocked earlier
+          // This will continue the action that had triggered the removal of the screen
+          onPress: () => this.props.navigation.dispatch(e.data.action),
+        },
+      ]
+    );
+      
+    })
+//    console.log(this.props.route.params.level)
+  }
+
+  componentDidUpdate() {
+    //should fix the bug* with multiple selections at once
+    //but it kinda doesnt work
+//    for (let i = 0; lvlSetTimeOut.length-1; i<lvlSetTimeOut) {//clearring all the timeouts 
+//      clearTimeout(lvlSetTimeOut[i]);
+//      //fix test table
+//    } 
+    lvlSetTimeOut=[]//making the arr empty again after clearing all the timeouts**
+
+ //   return this.state.sound ? this.state.sound.unloadAsync() : undefined;
+  }
 
   handlOnTimeOut() {
       this.setState( prevState => ({q:prevState.q+1}))
   }
   
   handlOnTap(res) {
-    if(res == +levels[this.props.route.params.level]["questions"][this.state.q]["ans"]){
-      this.setState( (prevState) => ({
-        q:prevState.q+1,
-	correctAnswered:prevState.correctAnswered+1
-      }))
-    }else
-      this.setState( prevState => ({q:prevState.q+1}))
+    async function playSound(isCorrect) {
+      const { sound } = await Audio.Sound.createAsync(
+	isCorrect ? require('../assets/correct.mp3') : require('../assets/kurwa.mp3')
+      );
+
+//      this.state.sound = sound//setting the state without setState to prevent update
+      await sound.playAsync();
     }
-  //}
+    
+    if(res == +levels[this.props.route.params.level]["questions"][this.state.q]["ans"]){
+      playSound(true)
+      lvlSetTimeOut.push( setTimeout(
+	()=> {
+	  this.setState( (prevState) => ({
+            q:prevState.q+1,
+	    correctAnswered:prevState.correctAnswered+1,
+	  }))
+	},800))
+    }else {
+      playSound(false)
+      lvlSetTimeOut.push( setTimeout(() => {this.setState( prevState => ({q:prevState.q+1})) },2000))
+    }
+  }
   render(){
+
+  console.log(this.state.q)
     let finish = false;
     let arr=[];
     //if the question exists generating the options for it otherwise set finish to true and render the finish screen
@@ -164,7 +217,7 @@ class LvlContainer extends React.Component{
 	{
 	  //setting the timer if the level requires one
 	  finish ?
-	  this.props.navigation.navigate('finish', {correctAns:this.state.correctAnswered,lvl:this.props.route.params.level}) : 
+	  this.props.navigation.replace ('finish', {correctAns:this.state.correctAnswered,lvl:this.props.route.params.level}) ://fix rec for test table
 	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q}
 		onTap={this.handlOnTap}
 		timer={ levels[this.props.route.params.level].timer}
@@ -263,11 +316,11 @@ function Finish(props) {
   }
   function retry() {
 //    props.navigation.navigate('lvl', {level:e})
-    props.navigation.navigate("lvl", {level: 1})
+    props.navigation.navigate('lvl', {level:"1"})
 //    console.log(props.route.params.lvl)
   }
   return(
-    <ImageBackground source={require("../assets/finish.jpg")} style={styledLevel.img}>
+   <ImageBackground source={require("../assets/finish.jpg")} style={styledLevel.img}>
       <View style={styledFinish.container}>
 	<View style={styledFinish.header}>
 	  <Text style={styledFinish.title}>Finish</Text>
@@ -285,12 +338,12 @@ function Finish(props) {
 	      <Image source={require("../assets/home.png")} style={styledFinish.btnImage}></Image>
 	      <Text style={styledFinish.buttonText}>Go Home</Text>
 	    </TouchableOpacity>
-{	    
-//	    <TouchableOpacity onPress={ () => retry() } style={styledFinish.buttonContainer}>
-//	      <Image source={require("../assets/retry.png")} style={styledFinish.btnImage}></Image>
-//	      <Text style={styledFinish.buttonText}>Retry</Text>
-//	    </TouchableOpacity>
-}	    
+	    
+	    <TouchableOpacity onPress={ () => retry() } style={styledFinish.buttonContainer}>
+	      <Image source={require("../assets/retry.png")} style={styledFinish.btnImage}></Image>
+	      <Text style={styledFinish.buttonText}>Retry</Text>
+	    </TouchableOpacity>
+    
 	  </View>
 
 	</View>
@@ -300,12 +353,16 @@ function Finish(props) {
 }
 
 const styledFinish = StyleSheet.create({
+  headerContainer: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 5
+  },
   gif: {
     width: 100,
     height: 100,
   },
   container: {
     flex: 1,
+
   },
   header: {
     position: "relative",
