@@ -144,12 +144,10 @@ class LvlContainer extends React.Component{
   }
 
   componentDidUpdate() {
-    //should fix the bug* with multiple selections at once
-    //but it kinda doesnt work
-//    for (let i = 0; lvlSetTimeOut.length-1; i<lvlSetTimeOut) {//clearring all the timeouts 
-//      clearTimeout(lvlSetTimeOut[i]);
-//      //fix test table
-//    } 
+    //fixes the bug* with multiple selections at once
+    lvlSetTimeOut.forEach( item => {//clearring all the timeouts 
+      clearTimeout(item);
+    }) 
     lvlSetTimeOut=[]//making the arr empty again after clearing all the timeouts**
 
     return this.state.sound ? this.state.sound.unloadAsync() : undefined; //preventing memory leacks
