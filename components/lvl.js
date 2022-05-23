@@ -109,8 +109,8 @@ class LvlContainer extends React.Component{
     this.state = {
       q:0, //start from question 0 
       timer:+levels[this.props.route.params.level]["timer"],
-      correctAnswered:0
-//      sound:false//used to check if a sound is loaded; if !false will unload the saound else do nothing
+      correctAnswered:0,
+      sound:false//used to check if a sound is loaded; if !false will unload the saound else do nothing
     };
     this.handlOnTap = this.handlOnTap.bind(this)
     this.handlOnTimeOut = this.handlOnTimeOut.bind(this)
@@ -152,7 +152,7 @@ class LvlContainer extends React.Component{
 //    } 
     lvlSetTimeOut=[]//making the arr empty again after clearing all the timeouts**
 
- //   return this.state.sound ? this.state.sound.unloadAsync() : undefined;
+    return this.state.sound ? this.state.sound.unloadAsync() : undefined; //preventing memory leacks
   }
 
   handlOnTimeOut() {
@@ -160,11 +160,12 @@ class LvlContainer extends React.Component{
   }
   
   handlOnTap(res) {
+    let snd;
     async function playSound(isCorrect) {
       const { sound } = await Audio.Sound.createAsync(
 	isCorrect ? require('../assets/correct.mp3') : require('../assets/kurwa.mp3')
       );
-
+      snd=sound;
 //      this.state.sound = sound//setting the state without setState to prevent update
       await sound.playAsync();
     }
@@ -176,11 +177,12 @@ class LvlContainer extends React.Component{
 	  this.setState( (prevState) => ({
             q:prevState.q+1,
 	    correctAnswered:prevState.correctAnswered+1,
+	    sound: snd
 	  }))
 	},800))
     }else {
       playSound(false)
-      lvlSetTimeOut.push( setTimeout(() => {this.setState( prevState => ({q:prevState.q+1})) },2000))
+      lvlSetTimeOut.push( setTimeout(() => {this.setState( prevState => ({q:prevState.q+1,sound:snd})) },2000))
     }
   }
   render(){
