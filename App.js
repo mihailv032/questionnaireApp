@@ -31,17 +31,16 @@ export default function App() {
 	  }
 	}}/>
 	<Stack.Screen name="lvl" component={LvlContainer}  screenOptions={{unmountOnBlur:true }} options={{
-	  title:"Go Back",
+	  unmountOnBlur:true,
+	  title:"Go Home",
 	  headerStyle: {
-	    height:0,
-            backgroundColor: '#f4511e'
+            backgroundColor: '#BCEDFC'
 	  }
 	}} />
-	<Stack.Screen name="finish" component={Finish} screenOptions={{unmountOnBlur:true}} options={{
-	  
+	<Stack.Screen name="finish" component={Finish} options={{
+	  title: "Go Home",
 	  headerStyle: {
-	    height:0,
-            backgroundColor: '#f4511e'
+            backgroundColor: '#ffffff',
 	  }
 	  }}/>
       </Stack.Navigator>
