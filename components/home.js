@@ -1,6 +1,7 @@
 import React from 'react'
-import { StyleSheet, Button, Text, SafeAreaView,ImageBackground, Image, Platform, StatusBar } from 'react-native';
+import { StyleSheet, Button, Text, SafeAreaView,View,ImageBackground, Image, Platform, StatusBar } from 'react-native';
 import {LvlButtonsContainer} from './lvl'
+import {  Circle, Text as SvgText, TextPath, TSpan, G, Svg } from 'react-native-svg';
 
 //import MaskedView from "@react-native-community/masked-view";
 //import LinearGradient from "react-native-linear-gradient";
@@ -42,7 +43,27 @@ function Header({navigation}){
   return (
     <SafeAreaView style={styledHeader.container}>
       <Image source={logo} style={styledHeader.logo} />
-      <Text>welcome</Text>
+ <Svg height="200" width="200"
+          viewBox="0 0 300 300">
+          <G id="circle">
+            <Circle
+              r={75}
+              x={150}
+              y={176}
+              fill="none"
+              stroke=""
+              strokeWidth={14}
+              transform="rotate(-150)"
+            />
+          </G>
+          <SvgText fill="#000" fontSize="14">
+            <TextPath href="#circle">
+              <TSpan dx="0" dy={0} style={styledHeader.title}>
+                Welcome
+              </TSpan>
+            </TextPath>
+          </SvgText>
+        </Svg>
     </SafeAreaView >
   )
 }
@@ -56,7 +77,7 @@ const styledHeader=StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    fontSize: 30,
+    fontSize: 40,
     fontWeight: 'bold',
   },
   logo: {
