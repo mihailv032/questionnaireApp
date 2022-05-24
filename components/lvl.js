@@ -7,8 +7,8 @@ import * as data from '../assets/details.json'
 
 //import {writeAsStringAsync,documentDirectory,readAsStringAsync} from  'expo-file-system';
 
-const MyComponent = () => (
-  <ProgressBar style={{marginTop: 15}}progress={0.5} color="#49B5F2" />
+const MyComponent = ({progress}) => (
+  <ProgressBar style={{marginTop: 20}} progress={progress} color="#581845" />
 );
 
 const levels = data.levels
@@ -16,10 +16,11 @@ let progress = data.progress
 
 let lvlSetTimeOut=[];
 // presentational component for the level screens geenerated by the lvlsContainere
-function Lvls({choices,q,onTap,timer,onTimeOut}){
+function Lvls({choices,q,onTap,timer,onTimeOut,progress}){
   return (
     <View style={styledLevel.container}>
       <ImageBackground source={require("../assets/levelbg.jpg")} style={styledLevel.img}>
+	<MyComponent progress={progress}></MyComponent>
 	{ timer ? <Timer key={q} time={timer} onTimeOut={onTimeOut} style={styledLevel.timer} /> : null }
 	<View style={styledLevel.header}><Text style={styledLevel.question}>{q} ?</Text></View>
 	<View style={styledLevel.buttonContainer}>
@@ -59,7 +60,7 @@ const styledLevel = StyleSheet.create({
   },
   question: {
     fontSize: 37,
-    color: "#112A46",
+    color: "#581845",
     fontWeight: "bold"
   },
   buttons: {
@@ -110,14 +111,15 @@ class LvlContainer extends React.Component{
       q:0, //start from question 0 
       timer:+levels[this.props.route.params.level]["timer"],
       correctAnswered:0,
-      sound:false//used to check if a sound is loaded; if !false will unload the saound else do nothing
+      incorrectAnswered:0,
+      sound:false,//used to check if a sound is loaded; if !false will unload the saound else do nothing
     };
     this.handlOnTap = this.handlOnTap.bind(this)
     this.handlOnTimeOut = this.handlOnTimeOut.bind(this)
   }
   
   componentDidMount(){
- 
+  
     this.props.navigation.addListener('beforeRemove', (e) => {
       if (this.state.q>levels[this.props.route.params.level]['questions'].length-1){ //fix rec for test table
 	return;
@@ -144,6 +146,7 @@ class LvlContainer extends React.Component{
   }
 
   componentDidUpdate() {
+    
     //fixes the bug* with multiple selections at once
     lvlSetTimeOut.forEach( item => {//clearring all the timeouts 
       clearTimeout(item);
@@ -188,11 +191,19 @@ class LvlContainer extends React.Component{
 	},800))
     }else {
       playSound(false)
-      lvlSetTimeOut.push( setTimeout(() => {this.setState( prevState => ({q:prevState.q+1,sound:snd})) },2000))
+      lvlSetTimeOut.push( setTimeout(
+	() => {
+	  this.setState( prevState => ({
+	    q:prevState.q+1,
+	    sound:snd,
+	    incorrectAnswered:prevState.incorrectAnswered+1
+	  }))
+	},1000))
     }
   }
   render(){
 
+    let progress = ( (100 * this.state.q) / +levels[this.props.route.params.level].questions.length ) / 100
     let finish = false;
     let arr=[];
     //if the question exists generating the options for it otherwise set finish to true and render the finish screen
@@ -217,17 +228,20 @@ class LvlContainer extends React.Component{
 //	writeAsStringAsync(documentDirectory+"details.json",)
 //      }
     }
+    console.log(progress)
     //inserting the correct answer into the array of different options
     return (
       <>
 	{
 	  //setting the timer if the level requires one
 	  finish ?
-	  this.props.navigation.replace ('finish', {correctAns:this.state.correctAnswered,lvl:this.props.route.params.level}) ://fix rec for test table
+	  this.props.navigation.replace ('finish', {correctAns:this.state.correctAnswered,lvl:this.props.route.params.level,incorrectAns:this.state.incorrectAnswered}) ://fix rec for test table
 	  <Lvls choices={arr} q={levels[this.props.route.params.level].questions[this.state.q].q}
 		onTap={this.handlOnTap}
 		timer={ levels[this.props.route.params.level].timer}
-		onTimeOut={this.handlOnTimeOut} /> 
+		onTimeOut={this.handlOnTimeOut}
+		progress={progress}
+	  /> 
 	}
       </>
     )
@@ -317,6 +331,7 @@ const styledTimer = StyleSheet.create({
 
 function Finish(props) {
   const correctans = props.route.params.correctAns
+  const incorrectAns= props.route.params.incorrectAns
   function goHome(){
     props.navigation.navigate("home")
   }
@@ -335,7 +350,7 @@ function Finish(props) {
 
 	<View style={styledFinish.main}>
 	  <Text style={styledFinish.info}>You have answered
-	    {correctans != 1 ? ` ${correctans} questions ` : ` ${correctans} question `} correctly
+	    {correctans != 1 ? ` ${correctans} questions ` : ` ${correctans} question `} correctly and {incorrectAns} incorrect 
 	  </Text>
 
 	  <View>
