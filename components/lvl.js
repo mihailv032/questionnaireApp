@@ -27,7 +27,7 @@ function Lvls({choices,q,onTap,timer,onTimeOut}){
 	    choices.map( item => {
 	      return (
 		<>
-		  <TouchableOpacity style={styledLevel.buttons} key={item} onPress={ () => onTap(item) }>
+		  <TouchableOpacity style={styledLevel.buttons} key={Math.floor(Math.random() * 100)} onPress={ () => onTap(item) }>
 		    <Text style={styledLevel.buttonText}>{item}</Text>
 		  </TouchableOpacity>
 		</>
@@ -152,6 +152,14 @@ class LvlContainer extends React.Component{
 
     return this.state.sound ? this.state.sound.unloadAsync() : undefined; //preventing memory leacks
   }
+  componentWillUnmount(){
+    lvlSetTimeOut.forEach( item => {//clearring all the timeouts 
+      clearTimeout(item);
+    }) 
+    lvlSetTimeOut=[]//making the arr empty again after clearing all the timeouts**
+
+    return this.state.sound ? this.state.sound.unloadAsync() : undefined; //preventing memory leacks
+  }
 
   handlOnTimeOut() {
       this.setState( prevState => ({q:prevState.q+1}))
@@ -185,7 +193,6 @@ class LvlContainer extends React.Component{
   }
   render(){
 
-  console.log(this.state.q)
     let finish = false;
     let arr=[];
     //if the question exists generating the options for it otherwise set finish to true and render the finish screen
@@ -211,7 +218,6 @@ class LvlContainer extends React.Component{
 //      }
     }
     //inserting the correct answer into the array of different options
-    console.log(this.state.correctAnswered)
     return (
       <>
 	{
@@ -316,7 +322,7 @@ function Finish(props) {
   }
   function retry() {
 //    props.navigation.navigate('lvl', {level:e})
-    props.navigation.navigate('lvl', {level:"1"})
+    props.navigation.replace('lvl', {level:props.route.params.lvl})
 //    console.log(props.route.params.lvl)
   }
   return(
