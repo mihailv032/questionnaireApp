@@ -350,7 +350,7 @@ function Finish(props) {
 
 	<View style={styledFinish.main}>
 	  <Text style={styledFinish.info}>You have answered
-	    {correctans != 1 ? ` ${correctans} questions ` : ` ${correctans} question `} correctly and {incorrectAns} incorrect 
+	    {correctans != 1 ? ` ${correctans} questions ` : ` ${correctans} question `} correctly and {incorrectAns} incorrectly 
 	  </Text>
 
 	  <View>
